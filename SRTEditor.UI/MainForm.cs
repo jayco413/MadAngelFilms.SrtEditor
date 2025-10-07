@@ -33,10 +33,10 @@ public partial class MainForm : MaterialForm
         manager.AddFormToManage(this);
         manager.Theme = MaterialSkinManager.Themes.DARK;
         manager.ColorScheme = new ColorScheme(
-            Color.FromArgb(0x21, 0x21, 0x21),
-            Color.FromArgb(0x0D, 0x47, 0xA1),
-            Color.FromArgb(0x12, 0x36, 0x6F),
-            Color.FromArgb(0xFF, 0x6F, 0x00),
+            Color.FromArgb(0x7C, 0x0A, 0x02),
+            Color.FromArgb(0x4A, 0x00, 0x00),
+            Color.FromArgb(0x99, 0x2A, 0x1C),
+            Color.FromArgb(0xC2, 0x9F, 0x13),
             TextShade.WHITE);
     }
 

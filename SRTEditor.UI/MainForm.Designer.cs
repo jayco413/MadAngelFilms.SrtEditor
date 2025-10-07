@@ -333,13 +333,14 @@ partial class MainForm
         // subtitleListView
         // 
         subtitleListView.AutoSizeTable = false;
-        subtitleListView.BackColor = Color.FromArgb(255, 255, 255);
+        subtitleListView.BackColor = Color.FromArgb(26, 26, 26);
         subtitleListView.BorderStyle = BorderStyle.None;
         subtitleListView.Columns.AddRange(new ColumnHeader[] { sequenceColumnHeader, startColumnHeader, endColumnHeader, textColumnHeader });
         subtitleListView.Depth = 0;
         subtitleListView.Dock = DockStyle.Fill;
         subtitleListView.FullRowSelect = true;
         subtitleListView.HideSelection = false;
+        subtitleListView.ForeColor = Color.FromArgb(242, 242, 240);
         subtitleListView.Location = new Point(4, 40);
         subtitleListView.Margin = new Padding(4);
         subtitleListView.MinimumSize = new Size(200, 200);
@@ -413,7 +414,7 @@ partial class MainForm
         // 
         // videoPanel
         // 
-        videoPanel.BackColor = Color.FromArgb(18, 18, 18);
+        videoPanel.BackColor = Color.FromArgb(11, 29, 58);
         videoPanel.Controls.Add(videoPlaceholderLabel);
         videoPanel.Dock = DockStyle.Fill;
         videoPanel.Location = new Point(4, 40);
@@ -426,7 +427,7 @@ partial class MainForm
         // 
         videoPlaceholderLabel.Dock = DockStyle.Fill;
         videoPlaceholderLabel.Font = new Font("Segoe UI", 12F, FontStyle.Italic, GraphicsUnit.Point);
-        videoPlaceholderLabel.ForeColor = Color.WhiteSmoke;
+        videoPlaceholderLabel.ForeColor = Color.FromArgb(242, 242, 240);
         videoPlaceholderLabel.Location = new Point(0, 0);
         videoPlaceholderLabel.Name = "videoPlaceholderLabel";
         videoPlaceholderLabel.Size = new Size(982, 426);
@@ -534,12 +535,13 @@ partial class MainForm
         // subtitleTextBox
         // 
         subtitleTextBox.AnimateReadOnly = false;
-        subtitleTextBox.BackColor = Color.FromArgb(242, 242, 242);
+        subtitleTextBox.BackColor = Color.FromArgb(242, 242, 240);
         subtitleTextBox.Depth = 0;
         subtitleTextBox.Dock = DockStyle.Fill;
         subtitleTextBox.Enabled = false;
         subtitleTextBox.Font = new Font("Roboto", 16F, FontStyle.Regular, GraphicsUnit.Pixel);
         subtitleTextBox.HideSelection = true;
+        subtitleTextBox.ForeColor = Color.FromArgb(26, 26, 26);
         subtitleTextBox.Location = new Point(4, 647);
         subtitleTextBox.Margin = new Padding(4);
         subtitleTextBox.MaxLength = 1500;
