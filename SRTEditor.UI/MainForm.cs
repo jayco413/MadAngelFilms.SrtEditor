@@ -71,8 +71,8 @@ public partial class MainForm : MaterialForm
         subtitleListView.Font = bodyFont;
         subtitleTextBox.Font = textFont;
         videoPlaceholderLabel.Font = new Font("Roboto", 18F, FontStyle.Italic, GraphicsUnit.Pixel);
-        mainMenuStrip.Font = new Font("Roboto", 16F, FontStyle.Regular, GraphicsUnit.Point);
-        mainMenuStrip.Padding = new Padding(12, 12, 12, 12);
+        mainMenuStrip.Font = new Font("Roboto", 18F, FontStyle.Regular, GraphicsUnit.Pixel);
+        mainMenuStrip.ApplyMadAngelTheme();
         ConfigureIcons();
         playbackTrackBar.Minimum = 0;
         playbackTrackBar.Maximum = 1000;
