@@ -30,6 +30,7 @@ public partial class MainForm : MaterialForm
     private bool _suppressSubtitleTextChanges;
     private const int TextColumnIndex = 3;
     private const int ActionColumnIndex = 4;
+    private bool _suppressAutoPlay;
 
     public MainForm(MainFormController controller)
     {
@@ -68,6 +69,7 @@ public partial class MainForm : MaterialForm
         videoPlaceholderLabel.BackColor = Color.FromArgb(11, 29, 58);
         AcceptButton = null;
         CancelButton = null;
+        
         var normalFont = new Font("Roboto", 16F, FontStyle.Regular, GraphicsUnit.Pixel);
         subtitleHeaderLabel.Font = normalFont;
         videoFileLabel.Font = normalFont;
@@ -77,6 +79,8 @@ public partial class MainForm : MaterialForm
         videoPlaceholderLabel.Font = new Font("Roboto", 16F, FontStyle.Italic, GraphicsUnit.Pixel);
         mainMenuStrip.Font = normalFont;
         mainMenuStrip.Padding = new Padding(8, 8, 8, 8);
+        mainMenuStrip.ApplyMadAngelTheme();
+
         ConfigureIcons();
         playbackTrackBar.Minimum = 0;
         playbackTrackBar.Maximum = 1000;
@@ -327,6 +331,10 @@ public partial class MainForm : MaterialForm
             long startMilliseconds = (long)entry.StartTime.TotalMilliseconds;
             player.Time = startMilliseconds;
             UpdateTrackBarFromMediaTime(startMilliseconds, player.Length);
+            if (!_suppressAutoPlay)
+            {
+                EnsurePlaybackRunning();
+            }
         }
         UpdateActionButtonsState();
     }
@@ -501,17 +509,7 @@ public partial class MainForm : MaterialForm
 
     private void PlayButton_Click(object? sender, EventArgs e)
     {
-        if (_mediaPlayer is null || _currentMedia is null)
-        {
-            return;
-        }
-
-        if (_mediaPlayer.Play())
-        {
-            videoPlaceholderLabel.Visible = false;
-            videoView.Visible = true;
-            _playbackTimer?.Start();
-        }
+        EnsurePlaybackRunning();
     }
 
     private void PauseButton_Click(object? sender, EventArgs e)
@@ -682,5 +680,25 @@ public partial class MainForm : MaterialForm
             playbackTrackBar.Value = clampedValue;
         }
         _isSeeking = previousSeeking;
+    }
+
+    private void EnsurePlaybackRunning()
+    {
+        if (_mediaPlayer is not MediaPlayer player || _currentMedia is null)
+        {
+            return;
+        }
+
+        if (!player.IsPlaying)
+        {
+            if (!player.Play())
+            {
+                return;
+            }
+        }
+
+        videoPlaceholderLabel.Visible = false;
+        videoView.Visible = true;
+        _playbackTimer?.Start();
     }
 }
