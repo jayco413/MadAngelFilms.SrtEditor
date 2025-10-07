@@ -24,6 +24,7 @@ public partial class MainForm : MaterialForm
     private Media? _currentMedia;
     private System.Windows.Forms.Timer? _playbackTimer;
     private bool _isSeeking;
+    private bool _suppressAutoPlay;
 
     public MainForm(MainFormController controller)
     {
@@ -225,7 +226,15 @@ public partial class MainForm : MaterialForm
         subtitleListView.Focus();
         if (subtitleListView.Items.Count > 0)
         {
-            subtitleListView.Items[0].Selected = true;
+            _suppressAutoPlay = true;
+            try
+            {
+                subtitleListView.Items[0].Selected = true;
+            }
+            finally
+            {
+                _suppressAutoPlay = false;
+            }
         }
 
         fileSaveMenuItem.Enabled = true;
@@ -295,6 +304,10 @@ public partial class MainForm : MaterialForm
             long startMilliseconds = (long)entry.StartTime.TotalMilliseconds;
             player.Time = startMilliseconds;
             UpdateTrackBarFromMediaTime(startMilliseconds, player.Length);
+            if (!_suppressAutoPlay)
+            {
+                EnsurePlaybackRunning();
+            }
         }
     }
 
@@ -323,17 +336,7 @@ public partial class MainForm : MaterialForm
 
     private void PlayButton_Click(object? sender, EventArgs e)
     {
-        if (_mediaPlayer is null || _currentMedia is null)
-        {
-            return;
-        }
-
-        if (_mediaPlayer.Play())
-        {
-            videoPlaceholderLabel.Visible = false;
-            videoView.Visible = true;
-            _playbackTimer?.Start();
-        }
+        EnsurePlaybackRunning();
     }
 
     private void PauseButton_Click(object? sender, EventArgs e)
@@ -504,5 +507,25 @@ public partial class MainForm : MaterialForm
             playbackTrackBar.Value = clampedValue;
         }
         _isSeeking = previousSeeking;
+    }
+
+    private void EnsurePlaybackRunning()
+    {
+        if (_mediaPlayer is not MediaPlayer player || _currentMedia is null)
+        {
+            return;
+        }
+
+        if (!player.IsPlaying)
+        {
+            if (!player.Play())
+            {
+                return;
+            }
+        }
+
+        videoPlaceholderLabel.Visible = false;
+        videoView.Visible = true;
+        _playbackTimer?.Start();
     }
 }
