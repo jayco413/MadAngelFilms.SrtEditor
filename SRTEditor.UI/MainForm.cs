@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -18,12 +20,16 @@ public partial class MainForm : MaterialForm
 {
     private readonly MainFormController _controller;
     private SubtitleProject? _currentProject;
+    private List<SubtitleEntry> _subtitleEntries = new();
     private CancellationTokenSource? _loadingCancellation;
     private LibVLC? _libVlc;
     private MediaPlayer? _mediaPlayer;
     private Media? _currentMedia;
     private System.Windows.Forms.Timer? _playbackTimer;
     private bool _isSeeking;
+    private bool _suppressSubtitleTextChanges;
+    private const int TextColumnIndex = 3;
+    private const int ActionColumnIndex = 4;
     private bool _suppressAutoPlay;
 
     public MainForm(MainFormController controller)
@@ -53,7 +59,7 @@ public partial class MainForm : MaterialForm
     private void ConfigureControls()
     {
         subtitleListView.HeaderStyle = ColumnHeaderStyle.Nonclickable;
-        subtitleListView.MultiSelect = false;
+        subtitleListView.MultiSelect = true;
         subtitleListView.AccessibleName = "Subtitle entries";
         subtitleTextBox.AccessibleName = "Subtitle text";
         subtitleTextBox.Text = string.Empty;
@@ -63,17 +69,18 @@ public partial class MainForm : MaterialForm
         videoPlaceholderLabel.BackColor = Color.FromArgb(11, 29, 58);
         AcceptButton = null;
         CancelButton = null;
-        var headingFont = new Font("Roboto", 20F, FontStyle.Regular, GraphicsUnit.Pixel);
-        var bodyFont = new Font("Roboto", 18F, FontStyle.Regular, GraphicsUnit.Pixel);
-        var textFont = new Font("Roboto", 22F, FontStyle.Regular, GraphicsUnit.Pixel);
-        subtitleHeaderLabel.Font = headingFont;
-        videoFileLabel.Font = headingFont;
-        subtitleTimingLabel.Font = bodyFont;
-        subtitleListView.Font = bodyFont;
-        subtitleTextBox.Font = textFont;
-        videoPlaceholderLabel.Font = new Font("Roboto", 18F, FontStyle.Italic, GraphicsUnit.Pixel);
-        mainMenuStrip.Font = new Font("Roboto", 18F, FontStyle.Regular, GraphicsUnit.Pixel);
+        
+        var normalFont = new Font("Roboto", 16F, FontStyle.Regular, GraphicsUnit.Pixel);
+        subtitleHeaderLabel.Font = normalFont;
+        videoFileLabel.Font = normalFont;
+        subtitleTimingLabel.Font = normalFont;
+        subtitleListView.Font = normalFont;
+        subtitleTextBox.Font = normalFont;
+        videoPlaceholderLabel.Font = new Font("Roboto", 16F, FontStyle.Italic, GraphicsUnit.Pixel);
+        mainMenuStrip.Font = normalFont;
+        mainMenuStrip.Padding = new Padding(8, 8, 8, 8);
         mainMenuStrip.ApplyMadAngelTheme();
+
         ConfigureIcons();
         playbackTrackBar.Minimum = 0;
         playbackTrackBar.Maximum = 1000;
@@ -85,9 +92,12 @@ public partial class MainForm : MaterialForm
         playButton.Click += PlayButton_Click;
         pauseButton.Click += PauseButton_Click;
         stopButton.Click += StopButton_Click;
+        combineSelectedButton.Click += CombineSelectedButton_Click;
         videoView.Visible = false;
         videoPlaceholderLabel.BringToFront();
         UpdatePlaybackControlsEnabledState(isFormLoading: false);
+        subtitleListView.MouseClick += SubtitleListView_MouseClick;
+        subtitleTextBox.TextChanged += SubtitleTextBox_TextChanged;
     }
 
     private void ConfigureIcons()
@@ -207,10 +217,21 @@ public partial class MainForm : MaterialForm
     {
         ResetVideoState();
         _currentProject = project;
+        _subtitleEntries = project.Entries
+            .Select(entry => new SubtitleEntry(entry.SequenceNumber, entry.StartTime, entry.EndTime, entry.Text))
+            .ToList();
+        RefreshSubtitleList(selectedIndex: 0);
+        fileSaveMenuItem.Enabled = true;
+        videoFileLabel.Text = $"Video Preview – {Path.GetFileName(project.VideoFilePath)}";
+        LoadVideo(project.VideoFilePath);
+    }
+
+    private void RefreshSubtitleList(int? selectedIndex = null)
+    {
         subtitleListView.BeginUpdate();
         subtitleListView.Items.Clear();
 
-        foreach (SubtitleEntry entry in project.Entries)
+        foreach (SubtitleEntry entry in _subtitleEntries)
         {
             var item = new ListViewItem(entry.SequenceNumber.ToString(CultureInfo.InvariantCulture))
             {
@@ -219,27 +240,26 @@ public partial class MainForm : MaterialForm
             item.SubItems.Add(entry.StartTime.ToString(@"hh\:mm\:ss\.fff", CultureInfo.InvariantCulture));
             item.SubItems.Add(entry.EndTime.ToString(@"hh\:mm\:ss\.fff", CultureInfo.InvariantCulture));
             item.SubItems.Add(entry.Text);
+            item.SubItems.Add("Delete");
             subtitleListView.Items.Add(item);
         }
 
         subtitleListView.EndUpdate();
-        subtitleListView.Focus();
-        if (subtitleListView.Items.Count > 0)
+
+        if (subtitleListView.Items.Count == 0)
         {
-            _suppressAutoPlay = true;
-            try
-            {
-                subtitleListView.Items[0].Selected = true;
-            }
-            finally
-            {
-                _suppressAutoPlay = false;
-            }
+            ClearSubtitleDetails();
+            UpdateActionButtonsState();
+            return;
         }
 
-        fileSaveMenuItem.Enabled = true;
-        videoFileLabel.Text = $"Video Preview – {Path.GetFileName(project.VideoFilePath)}";
-        LoadVideo(project.VideoFilePath);
+        int targetIndex = selectedIndex ?? 0;
+        targetIndex = Math.Clamp(targetIndex, 0, subtitleListView.Items.Count - 1);
+        subtitleListView.Items[targetIndex].Selected = true;
+        subtitleListView.Items[targetIndex].Focused = true;
+        subtitleListView.EnsureVisible(targetIndex);
+        subtitleListView.Focus();
+        UpdateActionButtonsState();
     }
 
     private void LoadVideo(string videoPath)
@@ -275,6 +295,8 @@ public partial class MainForm : MaterialForm
         if (isLoading)
         {
             StopPlaybackInternal(resetPosition: true);
+            combineSelectedButton.Enabled = false;
+            subtitleTextBox.Enabled = false;
         }
 
         UpdatePlaybackControlsEnabledState(isLoading);
@@ -282,23 +304,28 @@ public partial class MainForm : MaterialForm
 
     private void SubtitleListView_SelectedIndexChanged(object? sender, EventArgs e)
     {
-        if (subtitleListView.SelectedItems.Count == 0)
+        if (subtitleListView.SelectedItems.Count != 1)
         {
             ClearSubtitleDetails();
+            UpdateActionButtonsState();
             return;
         }
 
-        SubtitleEntry? entry = subtitleListView.SelectedItems[0].Tag as SubtitleEntry;
-        if (entry is null)
+        ListViewItem selectedItem = subtitleListView.SelectedItems[0];
+        if (selectedItem.Tag is not SubtitleEntry entry)
         {
             ClearSubtitleDetails();
+            UpdateActionButtonsState();
             return;
         }
 
         string startText = entry.StartTime.ToString(@"hh\:mm\:ss\.fff", CultureInfo.InvariantCulture);
         string endText = entry.EndTime.ToString(@"hh\:mm\:ss\.fff", CultureInfo.InvariantCulture);
         subtitleTimingLabel.Text = $"Start: {startText}  End: {endText}";
+        _suppressSubtitleTextChanges = true;
         subtitleTextBox.Text = entry.Text;
+        subtitleTextBox.Enabled = true;
+        _suppressSubtitleTextChanges = false;
         if (_mediaPlayer is MediaPlayer player && player.Media is not null && player.IsSeekable)
         {
             long startMilliseconds = (long)entry.StartTime.TotalMilliseconds;
@@ -309,18 +336,164 @@ public partial class MainForm : MaterialForm
                 EnsurePlaybackRunning();
             }
         }
+        UpdateActionButtonsState();
     }
 
     private void ClearSubtitleDetails()
     {
         subtitleTimingLabel.Text = "Start: --:--:--.---  End: --:--:--.---";
+        _suppressSubtitleTextChanges = true;
         subtitleTextBox.Text = string.Empty;
+        _suppressSubtitleTextChanges = false;
+        subtitleTextBox.Enabled = false;
         if (_currentMedia is null)
         {
             videoPlaceholderLabel.Text = "Video playback preview will appear here.";
             videoPlaceholderLabel.Visible = true;
             videoView.Visible = false;
         }
+    }
+
+    private void UpdateActionButtonsState()
+    {
+        if (!subtitleListView.Enabled)
+        {
+            combineSelectedButton.Enabled = false;
+            return;
+        }
+
+        if (subtitleListView.SelectedIndices.Count != 2)
+        {
+            combineSelectedButton.Enabled = false;
+            return;
+        }
+
+        int[] indices = subtitleListView.SelectedIndices.Cast<int>().OrderBy(index => index).ToArray();
+        bool canCombine = indices.Length == 2 && indices[1] - indices[0] == 1;
+        combineSelectedButton.Enabled = canCombine;
+    }
+
+    private void SubtitleListView_MouseClick(object? sender, MouseEventArgs e)
+    {
+        if (e.Button != MouseButtons.Left)
+        {
+            return;
+        }
+
+        ListViewHitTestInfo hit = subtitleListView.HitTest(e.Location);
+        if (hit.Item is null || hit.SubItem is null)
+        {
+            return;
+        }
+
+        int subItemIndex = hit.Item.SubItems.IndexOf(hit.SubItem);
+        if (subItemIndex == ActionColumnIndex)
+        {
+            DeleteEntryAtIndex(hit.Item.Index);
+        }
+    }
+
+    private void DeleteEntryAtIndex(int index)
+    {
+        if (index < 0 || index >= _subtitleEntries.Count)
+        {
+            return;
+        }
+
+        _subtitleEntries.RemoveAt(index);
+        ReindexEntries();
+        UpdateCurrentProjectEntries();
+        int nextIndex = Math.Min(index, _subtitleEntries.Count - 1);
+        RefreshSubtitleList(nextIndex >= 0 ? nextIndex : (int?)null);
+    }
+
+    private void ReindexEntries()
+    {
+        _subtitleEntries = _subtitleEntries
+            .Select((entry, position) => new SubtitleEntry(position + 1, entry.StartTime, entry.EndTime, entry.Text))
+            .ToList();
+    }
+
+    private void UpdateCurrentProjectEntries()
+    {
+        if (_currentProject is null)
+        {
+            return;
+        }
+
+        _currentProject = new SubtitleProject(
+            _currentProject.SubtitleFilePath,
+            _currentProject.VideoFilePath,
+            _subtitleEntries);
+    }
+
+    private void CombineSelectedButton_Click(object? sender, EventArgs e)
+    {
+        if (subtitleListView.SelectedIndices.Count != 2)
+        {
+            return;
+        }
+
+        int[] indices = subtitleListView.SelectedIndices.Cast<int>().OrderBy(index => index).ToArray();
+        if (indices.Length != 2 || indices[1] - indices[0] != 1)
+        {
+            MessageBox.Show(
+                this,
+                "Please select two adjacent subtitle entries to combine.",
+                "Combine Subtitles",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+            return;
+        }
+
+        SubtitleEntry firstEntry = _subtitleEntries[indices[0]];
+        SubtitleEntry secondEntry = _subtitleEntries[indices[1]];
+        string combinedText = string.Join(
+            Environment.NewLine,
+            new[] { firstEntry.Text, secondEntry.Text }
+                .Where(text => !string.IsNullOrWhiteSpace(text)));
+
+        var combinedEntry = new SubtitleEntry(
+            firstEntry.SequenceNumber,
+            firstEntry.StartTime,
+            secondEntry.EndTime,
+            combinedText);
+
+        _subtitleEntries[indices[0]] = combinedEntry;
+        _subtitleEntries.RemoveAt(indices[1]);
+        ReindexEntries();
+        UpdateCurrentProjectEntries();
+        RefreshSubtitleList(indices[0]);
+    }
+
+    private void SubtitleTextBox_TextChanged(object? sender, EventArgs e)
+    {
+        if (_suppressSubtitleTextChanges || subtitleListView.SelectedItems.Count != 1)
+        {
+            return;
+        }
+
+        int selectedIndex = subtitleListView.SelectedItems[0].Index;
+        if (selectedIndex < 0 || selectedIndex >= _subtitleEntries.Count)
+        {
+            return;
+        }
+
+        SubtitleEntry currentEntry = _subtitleEntries[selectedIndex];
+        if (subtitleTextBox.Text == currentEntry.Text)
+        {
+            return;
+        }
+
+        var updatedEntry = new SubtitleEntry(
+            currentEntry.SequenceNumber,
+            currentEntry.StartTime,
+            currentEntry.EndTime,
+            subtitleTextBox.Text);
+        _subtitleEntries[selectedIndex] = updatedEntry;
+        subtitleListView.SelectedItems[0].SubItems[TextColumnIndex].Text = subtitleTextBox.Text;
+        subtitleListView.SelectedItems[0].Tag = updatedEntry;
+        UpdateCurrentProjectEntries();
     }
 
     private void FileExitMenuItem_Click(object? sender, EventArgs e)
