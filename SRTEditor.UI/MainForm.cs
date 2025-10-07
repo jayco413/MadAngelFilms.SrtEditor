@@ -326,15 +326,16 @@ public partial class MainForm : MaterialForm
         subtitleTextBox.Text = entry.Text;
         subtitleTextBox.Enabled = true;
         _suppressSubtitleTextChanges = false;
-        if (_mediaPlayer is MediaPlayer player && player.Media is not null && player.IsSeekable)
+        if (_mediaPlayer is MediaPlayer player && player.Media is not null)
         {
             long startMilliseconds = (long)entry.StartTime.TotalMilliseconds;
-            player.Time = startMilliseconds;
-            UpdateTrackBarFromMediaTime(startMilliseconds, player.Length);
             if (!_suppressAutoPlay)
             {
                 EnsurePlaybackRunning();
             }
+
+            player.Time = startMilliseconds;
+            UpdateTrackBarFromMediaTime(startMilliseconds, player.Length);
         }
         UpdateActionButtonsState();
     }
