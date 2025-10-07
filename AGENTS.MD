@@ -1,5 +1,10 @@
 ﻿# AGENTS.md
 
+## Project Specific Notes
+- a sample srt file is provided: sample_srt_file.srt
+- naming convention for srt files is Film Name (YYYY).language.srt where YYYY is the year of release, and
+- language is the two letter language code.
+
 ## 🎨 For UI Design
 - Ensure gratuitous use of Font Awesome SVG icons  
 - Copy only icons which are needed to the project from the solution folder  
