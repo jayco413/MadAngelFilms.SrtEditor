@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using MadAngelFilms.SrtEditor.Controllers;
 using MadAngelFilms.SrtEditor.Core.Models;
 using MadAngelFilms.SrtEditor.UI.Extensions;
+using MadAngelFilms.SrtEditor.UI.Resources;
 using MaterialSkin;
 using MaterialSkin.Controls;
 using LibVLCSharp.Shared;
@@ -72,6 +73,7 @@ public partial class MainForm : MaterialForm
         videoPlaceholderLabel.Font = new Font("Roboto", 18F, FontStyle.Italic, GraphicsUnit.Pixel);
         mainMenuStrip.Font = new Font("Roboto", 16F, FontStyle.Regular, GraphicsUnit.Point);
         mainMenuStrip.Padding = new Padding(12, 12, 12, 12);
+        ConfigureIcons();
         playbackTrackBar.Minimum = 0;
         playbackTrackBar.Maximum = 1000;
         playbackTrackBar.Value = 0;
@@ -85,6 +87,50 @@ public partial class MainForm : MaterialForm
         videoView.Visible = false;
         videoPlaceholderLabel.BringToFront();
         UpdatePlaybackControlsEnabledState(isFormLoading: false);
+    }
+
+    private void ConfigureIcons()
+    {
+        mainMenuStrip.ImageScalingSize = new Size(20, 20);
+
+        SetMenuIcon(fileMenuItem, "FileMenu");
+        SetMenuIcon(fileNewMenuItem, "FileNew");
+        SetMenuIcon(fileOpenMenuItem, "FileOpen");
+        SetMenuIcon(fileSaveMenuItem, "FileSave");
+        SetMenuIcon(fileExitMenuItem, "FileExit");
+
+        SetMenuIcon(editMenuItem, "EditMenu");
+        SetMenuIcon(editUndoMenuItem, "EditUndo");
+        SetMenuIcon(editRedoMenuItem, "EditRedo");
+        SetMenuIcon(editCutMenuItem, "EditCut");
+        SetMenuIcon(editCopyMenuItem, "EditCopy");
+        SetMenuIcon(editPasteMenuItem, "EditPaste");
+        SetMenuIcon(editDeleteMenuItem, "EditDelete");
+
+        SetMenuIcon(viewMenuItem, "ViewMenu");
+        SetMenuIcon(viewTogglePanelsMenuItem, "ViewTogglePanels");
+        SetMenuIcon(viewThemesMenuItem, "ViewThemes");
+        SetMenuIcon(viewRefreshMenuItem, "ViewRefresh");
+
+        SetMenuIcon(toolsMenuItem, "ToolsMenu");
+        SetMenuIcon(toolsOptionsMenuItem, "ToolsOptions");
+        SetMenuIcon(toolsSettingsMenuItem, "ToolsSettings");
+        SetMenuIcon(toolsPreferencesMenuItem, "ToolsPreferences");
+
+        SetMenuIcon(helpMenuItem, "HelpMenu");
+        SetMenuIcon(helpDocumentationMenuItem, "HelpDocumentation");
+        SetMenuIcon(helpCheckForUpdatesMenuItem, "HelpCheckForUpdates");
+        SetMenuIcon(helpAboutMenuItem, "HelpAbout");
+
+        playButton.Icon = IconProvider.GetIcon("PlaybackPlay", 28);
+        pauseButton.Icon = IconProvider.GetIcon("PlaybackPause", 28);
+        stopButton.Icon = IconProvider.GetIcon("PlaybackStop", 28);
+    }
+
+    private static void SetMenuIcon(ToolStripMenuItem menuItem, string iconName)
+    {
+        menuItem.Image = IconProvider.GetIcon(iconName, 20);
+        menuItem.ImageScaling = ToolStripItemImageScaling.None;
     }
 
     private async void FileOpenMenuItem_Click(object? sender, EventArgs e)
