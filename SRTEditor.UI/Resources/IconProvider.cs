@@ -9,7 +9,8 @@ namespace MadAngelFilms.SrtEditor.UI.Resources;
 
 internal static class IconProvider
 {
-    private const string ResourcePrefix = "MadAngelFilms.SrtEditor.UI.Resources.Icons.";
+    private static readonly Assembly ResourceAssembly = Assembly.GetExecutingAssembly();
+    private static readonly string ResourcePrefix = $"{ResourceAssembly.GetName().Name}.Resources.Icons.";
     private static readonly ConcurrentDictionary<string, Image> IconCache = new();
 
     public static Image GetIcon(string iconName, int size)
@@ -31,8 +32,7 @@ internal static class IconProvider
     private static Image LoadIcon(string iconName, int size)
     {
         string resourceName = ResourcePrefix + iconName + ".svg";
-        Assembly assembly = Assembly.GetExecutingAssembly();
-        using Stream? resourceStream = assembly.GetManifestResourceStream(resourceName);
+        using Stream? resourceStream = ResourceAssembly.GetManifestResourceStream(resourceName);
         if (resourceStream is null)
         {
             throw new InvalidOperationException($"Unable to locate icon resource '{resourceName}'.");
