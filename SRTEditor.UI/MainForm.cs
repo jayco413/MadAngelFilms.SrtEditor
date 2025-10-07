@@ -299,15 +299,16 @@ public partial class MainForm : MaterialForm
         string endText = entry.EndTime.ToString(@"hh\:mm\:ss\.fff", CultureInfo.InvariantCulture);
         subtitleTimingLabel.Text = $"Start: {startText}  End: {endText}";
         subtitleTextBox.Text = entry.Text;
-        if (_mediaPlayer is MediaPlayer player && player.Media is not null && player.IsSeekable)
+        if (_mediaPlayer is MediaPlayer player && player.Media is not null)
         {
             long startMilliseconds = (long)entry.StartTime.TotalMilliseconds;
-            player.Time = startMilliseconds;
-            UpdateTrackBarFromMediaTime(startMilliseconds, player.Length);
             if (!_suppressAutoPlay)
             {
                 EnsurePlaybackRunning();
             }
+
+            player.Time = startMilliseconds;
+            UpdateTrackBarFromMediaTime(startMilliseconds, player.Length);
         }
     }
 
