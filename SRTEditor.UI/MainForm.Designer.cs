@@ -1,6 +1,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 using MaterialSkin.Controls;
+using LibVLCSharp.WinForms;
 
 namespace MadAngelFilms.SrtEditor.UI;
 
@@ -17,9 +18,10 @@ partial class MainForm
     /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
     protected override void Dispose(bool disposing)
     {
-        if (disposing && (components != null))
+        if (disposing)
         {
-            components.Dispose();
+            DisposePlaybackResources();
+            components?.Dispose();
         }
         base.Dispose(disposing);
     }
@@ -65,6 +67,7 @@ partial class MainForm
         rightPanelLayout = new TableLayoutPanel();
         videoFileLabel = new MaterialLabel();
         videoPanel = new Panel();
+        videoView = new VideoView();
         videoPlaceholderLabel = new Label();
         playbackTrackBar = new TrackBar();
         playbackControlsLayout = new FlowLayoutPanel();
@@ -81,15 +84,18 @@ partial class MainForm
         leftPanelLayout.SuspendLayout();
         rightPanelLayout.SuspendLayout();
         videoPanel.SuspendLayout();
+        ((System.ComponentModel.ISupportInitialize)videoView).BeginInit();
         ((System.ComponentModel.ISupportInitialize)playbackTrackBar).BeginInit();
         playbackControlsLayout.SuspendLayout();
         SuspendLayout();
-        // 
+        //
         // mainMenuStrip
-        // 
+        //
         mainMenuStrip.AccessibleName = "Main menu";
+        mainMenuStrip.Dock = DockStyle.Top;
         mainMenuStrip.Items.AddRange(new ToolStripItem[] { fileMenuItem, editMenuItem, viewMenuItem, toolsMenuItem, helpMenuItem });
         mainMenuStrip.Location = new Point(3, 64);
+        mainMenuStrip.Margin = new Padding(0);
         mainMenuStrip.Name = "mainMenuStrip";
         mainMenuStrip.Padding = new Padding(8, 3, 0, 3);
         mainMenuStrip.Size = new Size(1494, 35);
@@ -415,6 +421,7 @@ partial class MainForm
         // videoPanel
         // 
         videoPanel.BackColor = Color.FromArgb(11, 29, 58);
+        videoPanel.Controls.Add(videoView);
         videoPanel.Controls.Add(videoPlaceholderLabel);
         videoPanel.Dock = DockStyle.Fill;
         videoPanel.Location = new Point(4, 40);
@@ -422,9 +429,21 @@ partial class MainForm
         videoPanel.Name = "videoPanel";
         videoPanel.Size = new Size(982, 426);
         videoPanel.TabIndex = 1;
-        // 
+        //
+        // videoView
+        //
+        videoView.BackColor = Color.Black;
+        videoView.Dock = DockStyle.Fill;
+        videoView.Location = new Point(0, 0);
+        videoView.MediaPlayer = null;
+        videoView.Name = "videoView";
+        videoView.Size = new Size(982, 426);
+        videoView.TabIndex = 1;
+        videoView.Text = "videoView";
+        videoView.Visible = false;
+        //
         // videoPlaceholderLabel
-        // 
+        //
         videoPlaceholderLabel.Dock = DockStyle.Fill;
         videoPlaceholderLabel.Font = new Font("Segoe UI", 12F, FontStyle.Italic, GraphicsUnit.Point);
         videoPlaceholderLabel.ForeColor = Color.FromArgb(242, 242, 240);
@@ -574,6 +593,7 @@ partial class MainForm
         rightPanelLayout.ResumeLayout(false);
         rightPanelLayout.PerformLayout();
         videoPanel.ResumeLayout(false);
+        ((System.ComponentModel.ISupportInitialize)videoView).EndInit();
         ((System.ComponentModel.ISupportInitialize)playbackTrackBar).EndInit();
         playbackControlsLayout.ResumeLayout(false);
         ResumeLayout(false);
@@ -618,6 +638,7 @@ partial class MainForm
     private TableLayoutPanel rightPanelLayout;
     private MaterialLabel videoFileLabel;
     private Panel videoPanel;
+    private VideoView videoView;
     private Label videoPlaceholderLabel;
     private TrackBar playbackTrackBar;
     private FlowLayoutPanel playbackControlsLayout;
