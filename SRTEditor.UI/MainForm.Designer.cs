@@ -63,6 +63,8 @@ partial class MainForm
         mainSplitContainer = new SplitContainer();
         leftPanelLayout = new TableLayoutPanel();
         subtitleHeaderLabel = new MaterialLabel();
+        subtitleActionsLayout = new FlowLayoutPanel();
+        combineSelectedButton = new MaterialButton();
         subtitleListView = new MaterialListView();
         rightPanelLayout = new TableLayoutPanel();
         videoFileLabel = new MaterialLabel();
@@ -82,6 +84,7 @@ partial class MainForm
         mainSplitContainer.Panel2.SuspendLayout();
         mainSplitContainer.SuspendLayout();
         leftPanelLayout.SuspendLayout();
+        subtitleActionsLayout.SuspendLayout();
         rightPanelLayout.SuspendLayout();
         videoPanel.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize)videoView).BeginInit();
@@ -309,12 +312,14 @@ partial class MainForm
         leftPanelLayout.ColumnCount = 1;
         leftPanelLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         leftPanelLayout.Controls.Add(subtitleHeaderLabel, 0, 0);
-        leftPanelLayout.Controls.Add(subtitleListView, 0, 1);
+        leftPanelLayout.Controls.Add(subtitleActionsLayout, 0, 1);
+        leftPanelLayout.Controls.Add(subtitleListView, 0, 2);
         leftPanelLayout.Dock = DockStyle.Fill;
         leftPanelLayout.Location = new Point(0, 0);
         leftPanelLayout.Margin = new Padding(4);
         leftPanelLayout.Name = "leftPanelLayout";
-        leftPanelLayout.RowCount = 2;
+        leftPanelLayout.RowCount = 3;
+        leftPanelLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         leftPanelLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         leftPanelLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         leftPanelLayout.Size = new Size(500, 754);
@@ -341,21 +346,21 @@ partial class MainForm
         subtitleListView.AutoSizeTable = false;
         subtitleListView.BackColor = Color.FromArgb(26, 26, 26);
         subtitleListView.BorderStyle = BorderStyle.None;
-        subtitleListView.Columns.AddRange(new ColumnHeader[] { sequenceColumnHeader, startColumnHeader, endColumnHeader, textColumnHeader });
+        subtitleListView.Columns.AddRange(new ColumnHeader[] { sequenceColumnHeader, startColumnHeader, endColumnHeader, textColumnHeader, actionColumnHeader });
         subtitleListView.Depth = 0;
         subtitleListView.Dock = DockStyle.Fill;
         subtitleListView.FullRowSelect = true;
         subtitleListView.HideSelection = false;
         subtitleListView.ForeColor = Color.FromArgb(242, 242, 240);
-        subtitleListView.Location = new Point(4, 40);
+        subtitleListView.Location = new Point(4, 80);
         subtitleListView.Margin = new Padding(4);
         subtitleListView.MinimumSize = new Size(200, 200);
         subtitleListView.MouseLocation = new Point(-1, -1);
         subtitleListView.MouseState = MaterialSkin.MouseState.OUT;
         subtitleListView.Name = "subtitleListView";
         subtitleListView.OwnerDraw = true;
-        subtitleListView.Size = new Size(492, 710);
-        subtitleListView.TabIndex = 1;
+        subtitleListView.Size = new Size(492, 670);
+        subtitleListView.TabIndex = 2;
         subtitleListView.UseCompatibleStateImageBehavior = false;
         subtitleListView.View = View.Details;
         subtitleListView.SelectedIndexChanged += SubtitleListView_SelectedIndexChanged;
@@ -379,6 +384,45 @@ partial class MainForm
         // 
         textColumnHeader.Text = "Text";
         textColumnHeader.Width = 220;
+        //
+        // actionColumnHeader
+        //
+        actionColumnHeader.Text = "Actions";
+        actionColumnHeader.Width = 90;
+        //
+        // subtitleActionsLayout
+        //
+        subtitleActionsLayout.AutoSize = true;
+        subtitleActionsLayout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        subtitleActionsLayout.Controls.Add(combineSelectedButton);
+        subtitleActionsLayout.Dock = DockStyle.Fill;
+        subtitleActionsLayout.FlowDirection = FlowDirection.LeftToRight;
+        subtitleActionsLayout.Location = new Point(4, 40);
+        subtitleActionsLayout.Margin = new Padding(4, 0, 4, 4);
+        subtitleActionsLayout.Name = "subtitleActionsLayout";
+        subtitleActionsLayout.Padding = new Padding(0, 0, 0, 4);
+        subtitleActionsLayout.Size = new Size(492, 36);
+        subtitleActionsLayout.TabIndex = 1;
+        subtitleActionsLayout.WrapContents = false;
+        //
+        // combineSelectedButton
+        //
+        combineSelectedButton.AutoSize = false;
+        combineSelectedButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        combineSelectedButton.Density = MaterialButton.MaterialButtonDensity.Default;
+        combineSelectedButton.Depth = 0;
+        combineSelectedButton.Enabled = false;
+        combineSelectedButton.HighEmphasis = true;
+        combineSelectedButton.Icon = null;
+        combineSelectedButton.Margin = new Padding(0, 4, 0, 4);
+        combineSelectedButton.Name = "combineSelectedButton";
+        combineSelectedButton.NoAccentTextColor = Color.Empty;
+        combineSelectedButton.Size = new Size(220, 28);
+        combineSelectedButton.TabIndex = 0;
+        combineSelectedButton.Text = "Combine Selected";
+        combineSelectedButton.Type = MaterialButton.MaterialButtonType.Contained;
+        combineSelectedButton.UseAccentColor = false;
+        combineSelectedButton.UseVisualStyleBackColor = true;
         // 
         // rightPanelLayout
         // 
@@ -595,6 +639,7 @@ partial class MainForm
         videoPanel.ResumeLayout(false);
         ((System.ComponentModel.ISupportInitialize)videoView).EndInit();
         ((System.ComponentModel.ISupportInitialize)playbackTrackBar).EndInit();
+        subtitleActionsLayout.ResumeLayout(false);
         playbackControlsLayout.ResumeLayout(false);
         ResumeLayout(false);
         PerformLayout();
@@ -630,11 +675,14 @@ partial class MainForm
     private SplitContainer mainSplitContainer;
     private TableLayoutPanel leftPanelLayout;
     private MaterialLabel subtitleHeaderLabel;
+    private FlowLayoutPanel subtitleActionsLayout;
     private MaterialListView subtitleListView;
     private ColumnHeader sequenceColumnHeader = new();
     private ColumnHeader startColumnHeader = new();
     private ColumnHeader endColumnHeader = new();
     private ColumnHeader textColumnHeader = new();
+    private ColumnHeader actionColumnHeader = new();
+    private MaterialButton combineSelectedButton;
     private TableLayoutPanel rightPanelLayout;
     private MaterialLabel videoFileLabel;
     private Panel videoPanel;
