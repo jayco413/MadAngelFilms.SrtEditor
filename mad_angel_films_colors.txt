@@ -1,0 +1,12 @@
+Color name       | Color purpose                                    | HTML code | RGB
+-----------------|--------------------------------------------------|-----------|--------------
+blood-red        | Primary brand / primary actions                  | #7C0A02   | 124, 10, 2
+black            | Pure black accents, borders, deep shadows        | #000000   | 0, 0, 0
+ash-gray         | Secondary text, dividers, disabled states        | #B2B2B2   | 178, 178, 178
+charcoal         | Primary dark background                          | #1A1A1A   | 26, 26, 26
+bone-white       | Light panels, text on dark backgrounds           | #F2F2F0   | 242, 242, 240
+midnight-blue    | Secondary background, headers, emphasis blocks   | #0B1D3A   | 11, 29, 58
+rust-red         | Secondary accent, warnings, destructive hover    | #992A1C   | 153, 42, 28
+mold-green       | Success states, confirmations                    | #4E5B31   | 78, 91, 49
+aged-gold        | Highlights, CTAs, selection/active indicators    | #C29F13   | 194, 159, 19
+crimson-shadow   | Depth accents, outlines, error emphasis          | #4A0000   | 74, 0, 0

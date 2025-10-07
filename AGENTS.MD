@@ -10,8 +10,8 @@
 ## 🎨 UI Design
 - Use Font Awesome SVG icons consistently  
 - Copy only icons used in the project; remove unused ones  
-- Use MaterialSkin.2 for all form styling  
-- Apply Mad Angel Films color palette and typography  
+- Use MaterialSkin.2 for all form styling
+- Apply Mad Angel Films color palette and typography (mad_angel_films_colors.txt)
 - Use consistent padding, spacing, and color hierarchy  
 - Define all icons and images in `/Resources/Icons/`  
 
