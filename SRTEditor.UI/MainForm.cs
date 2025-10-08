@@ -31,6 +31,7 @@ public partial class MainForm : MaterialForm
     private const int TextColumnIndex = 3;
     private const int ActionColumnIndex = 4;
     private bool _suppressAutoPlay;
+    private const double DefaultFrameStepMilliseconds = 1000d / 24d;
 
     public MainForm(MainFormController controller)
     {
@@ -92,9 +93,12 @@ public partial class MainForm : MaterialForm
         playButton.Click += PlayButton_Click;
         pauseButton.Click += PauseButton_Click;
         stopButton.Click += StopButton_Click;
+        frameBackButton.Click += FrameBackButton_Click;
+        frameForwardButton.Click += FrameForwardButton_Click;
         combineSelectedButton.Click += CombineSelectedButton_Click;
         videoView.Visible = false;
         videoPlaceholderLabel.BringToFront();
+        playbackPositionLabel.Text = "00:00:00.000 / --:--:--.--";
         UpdatePlaybackControlsEnabledState(isFormLoading: false);
         subtitleListView.MouseClick += SubtitleListView_MouseClick;
         subtitleTextBox.TextChanged += SubtitleTextBox_TextChanged;
@@ -277,6 +281,7 @@ public partial class MainForm : MaterialForm
         videoPlaceholderLabel.Visible = false;
         videoView.Visible = true;
         UpdatePlaybackControlsEnabledState(isFormLoading: false);
+        UpdatePlaybackPositionLabel(0, _mediaPlayer.Length);
     }
 
     private void CancelLoading()
@@ -529,6 +534,37 @@ public partial class MainForm : MaterialForm
         StopPlaybackInternal(resetPosition: true);
     }
 
+    private void FrameBackButton_Click(object? sender, EventArgs e)
+    {
+        StepFrame(-1);
+    }
+
+    private void FrameForwardButton_Click(object? sender, EventArgs e)
+    {
+        StepFrame(1);
+    }
+
+    private void StepFrame(int direction)
+    {
+        if (_mediaPlayer is not MediaPlayer player || _currentMedia is null)
+        {
+            return;
+        }
+
+        double frameDuration = DefaultFrameStepMilliseconds;
+        long frameOffset = (long)Math.Round(frameDuration * direction, MidpointRounding.AwayFromZero);
+        long target = player.Time + frameOffset;
+        long maximum = player.Length > 0 ? player.Length : long.MaxValue;
+        target = Math.Clamp(target, 0, maximum);
+
+        _isSeeking = true;
+        player.Time = target;
+        _isSeeking = false;
+
+        UpdateTrackBarFromMediaTime(target, player.Length);
+        UpdatePlaybackPositionLabel(target, player.Length);
+    }
+
     private void PlaybackTrackBar_MouseDown(object? sender, MouseEventArgs e)
     {
         _isSeeking = true;
@@ -572,6 +608,7 @@ public partial class MainForm : MaterialForm
         long total = _mediaPlayer.Length;
         long current = _mediaPlayer.Time;
         UpdateTrackBarFromMediaTime(current, total);
+        UpdatePlaybackPositionLabel(current, total);
     }
 
     private void MediaPlayer_EndReached(object? sender, EventArgs e)
@@ -597,6 +634,8 @@ public partial class MainForm : MaterialForm
         {
             SetTrackBarValueSafely(playbackTrackBar.Minimum);
         }
+
+        UpdatePlaybackPositionLabel(resetPosition ? 0 : _mediaPlayer.Time, _mediaPlayer.Length);
     }
 
     private void ResetVideoState()
@@ -623,6 +662,8 @@ public partial class MainForm : MaterialForm
         playButton.Enabled = hasMedia;
         pauseButton.Enabled = hasMedia;
         stopButton.Enabled = hasMedia;
+        frameBackButton.Enabled = hasMedia;
+        frameForwardButton.Enabled = hasMedia;
         playbackTrackBar.Enabled = hasMedia;
     }
 
@@ -638,6 +679,23 @@ public partial class MainForm : MaterialForm
         targetValue = Math.Clamp(targetValue, playbackTrackBar.Minimum, playbackTrackBar.Maximum);
 
         SetTrackBarValueSafely(targetValue);
+    }
+
+    private void UpdatePlaybackPositionLabel(long currentMilliseconds, long totalMilliseconds)
+    {
+        string currentText = FormatTimestamp(currentMilliseconds);
+        string totalText = totalMilliseconds > 0 ? FormatTimestamp(totalMilliseconds) : "--:--:--.--";
+        playbackPositionLabel.Text = $"{currentText} / {totalText}";
+    }
+
+    private static string FormatTimestamp(long milliseconds)
+    {
+        if (milliseconds < 0)
+        {
+            milliseconds = 0;
+        }
+
+        return TimeSpan.FromMilliseconds(milliseconds).ToString(@"hh\:mm\:ss\.fff", CultureInfo.InvariantCulture);
     }
 
     private void MainForm_FormClosed(object? sender, FormClosedEventArgs e)

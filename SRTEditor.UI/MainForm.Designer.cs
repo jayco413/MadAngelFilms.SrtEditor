@@ -62,6 +62,13 @@ partial class MainForm
         helpAboutMenuItem = new ToolStripMenuItem();
         mainSplitContainer = new SplitContainer();
         leftPanelLayout = new TableLayoutPanel();
+        primaryActionsLayout = new FlowLayoutPanel();
+        drawerNewButton = new MaterialButton();
+        drawerOpenButton = new MaterialButton();
+        drawerImportButton = new MaterialButton();
+        drawerExportButton = new MaterialButton();
+        drawerTutorialButton = new MaterialButton();
+        mainToolTip = new ToolTip(components);
         subtitleHeaderLabel = new MaterialLabel();
         subtitleActionsLayout = new FlowLayoutPanel();
         combineSelectedButton = new MaterialButton();
@@ -73,9 +80,12 @@ partial class MainForm
         videoPlaceholderLabel = new Label();
         playbackTrackBar = new TrackBar();
         playbackControlsLayout = new FlowLayoutPanel();
+        frameBackButton = new MaterialButton();
         playButton = new MaterialButton();
         pauseButton = new MaterialButton();
         stopButton = new MaterialButton();
+        frameForwardButton = new MaterialButton();
+        playbackPositionLabel = new MaterialLabel();
         subtitleTimingLabel = new MaterialLabel();
         subtitleTextBox = new MaterialMultiLineTextBox2();
         mainMenuStrip.SuspendLayout();
@@ -311,19 +321,139 @@ partial class MainForm
         // 
         leftPanelLayout.ColumnCount = 1;
         leftPanelLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        leftPanelLayout.Controls.Add(subtitleHeaderLabel, 0, 0);
-        leftPanelLayout.Controls.Add(subtitleActionsLayout, 0, 1);
-        leftPanelLayout.Controls.Add(subtitleListView, 0, 2);
+        leftPanelLayout.Controls.Add(primaryActionsLayout, 0, 0);
+        leftPanelLayout.Controls.Add(subtitleHeaderLabel, 0, 1);
+        leftPanelLayout.Controls.Add(subtitleActionsLayout, 0, 2);
+        leftPanelLayout.Controls.Add(subtitleListView, 0, 3);
         leftPanelLayout.Dock = DockStyle.Fill;
         leftPanelLayout.Location = new Point(0, 0);
         leftPanelLayout.Margin = new Padding(4);
         leftPanelLayout.Name = "leftPanelLayout";
-        leftPanelLayout.RowCount = 3;
+        leftPanelLayout.RowCount = 4;
+        leftPanelLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         leftPanelLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         leftPanelLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         leftPanelLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         leftPanelLayout.Size = new Size(500, 754);
         leftPanelLayout.TabIndex = 0;
+        //
+        // primaryActionsLayout
+        //
+        primaryActionsLayout.AutoSize = true;
+        primaryActionsLayout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        primaryActionsLayout.Controls.Add(drawerNewButton);
+        primaryActionsLayout.Controls.Add(drawerOpenButton);
+        primaryActionsLayout.Controls.Add(drawerImportButton);
+        primaryActionsLayout.Controls.Add(drawerExportButton);
+        primaryActionsLayout.Controls.Add(drawerTutorialButton);
+        primaryActionsLayout.Dock = DockStyle.Fill;
+        primaryActionsLayout.FlowDirection = FlowDirection.TopDown;
+        primaryActionsLayout.Location = new Point(4, 4);
+        primaryActionsLayout.Margin = new Padding(4, 4, 4, 12);
+        primaryActionsLayout.Name = "primaryActionsLayout";
+        primaryActionsLayout.Padding = new Padding(0, 4, 0, 4);
+        primaryActionsLayout.Size = new Size(492, 156);
+        primaryActionsLayout.TabIndex = 0;
+        primaryActionsLayout.WrapContents = false;
+        //
+        // drawerNewButton
+        //
+        drawerNewButton.AutoSize = false;
+        drawerNewButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        drawerNewButton.Density = MaterialButton.MaterialButtonDensity.Default;
+        drawerNewButton.Depth = 0;
+        drawerNewButton.Enabled = false;
+        drawerNewButton.HighEmphasis = true;
+        drawerNewButton.Icon = null;
+        drawerNewButton.Margin = new Padding(0, 0, 0, 8);
+        drawerNewButton.Name = "drawerNewButton";
+        drawerNewButton.NoAccentTextColor = Color.Empty;
+        drawerNewButton.Size = new Size(220, 36);
+        drawerNewButton.TabIndex = 0;
+        drawerNewButton.Text = "New Project";
+        drawerNewButton.Type = MaterialButton.MaterialButtonType.Contained;
+        drawerNewButton.UseAccentColor = true;
+        drawerNewButton.UseVisualStyleBackColor = true;
+        mainToolTip.SetToolTip(drawerNewButton, "Create a new subtitle project");
+        //
+        // drawerOpenButton
+        //
+        drawerOpenButton.AutoSize = false;
+        drawerOpenButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        drawerOpenButton.Density = MaterialButton.MaterialButtonDensity.Default;
+        drawerOpenButton.Depth = 0;
+        drawerOpenButton.HighEmphasis = true;
+        drawerOpenButton.Icon = null;
+        drawerOpenButton.Margin = new Padding(0, 0, 0, 8);
+        drawerOpenButton.Name = "drawerOpenButton";
+        drawerOpenButton.NoAccentTextColor = Color.Empty;
+        drawerOpenButton.Size = new Size(220, 36);
+        drawerOpenButton.TabIndex = 1;
+        drawerOpenButton.Text = "Open Project";
+        drawerOpenButton.Type = MaterialButton.MaterialButtonType.Contained;
+        drawerOpenButton.UseAccentColor = false;
+        drawerOpenButton.UseVisualStyleBackColor = true;
+        drawerOpenButton.Click += FileOpenMenuItem_Click;
+        mainToolTip.SetToolTip(drawerOpenButton, "Open an existing project");
+        //
+        // drawerImportButton
+        //
+        drawerImportButton.AutoSize = false;
+        drawerImportButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        drawerImportButton.Density = MaterialButton.MaterialButtonDensity.Default;
+        drawerImportButton.Depth = 0;
+        drawerImportButton.Enabled = false;
+        drawerImportButton.HighEmphasis = true;
+        drawerImportButton.Icon = null;
+        drawerImportButton.Margin = new Padding(0, 0, 0, 8);
+        drawerImportButton.Name = "drawerImportButton";
+        drawerImportButton.NoAccentTextColor = Color.Empty;
+        drawerImportButton.Size = new Size(220, 36);
+        drawerImportButton.TabIndex = 2;
+        drawerImportButton.Text = "Import Subtitles";
+        drawerImportButton.Type = MaterialButton.MaterialButtonType.Contained;
+        drawerImportButton.UseAccentColor = false;
+        drawerImportButton.UseVisualStyleBackColor = true;
+        mainToolTip.SetToolTip(drawerImportButton, "Import additional subtitle tracks");
+        //
+        // drawerExportButton
+        //
+        drawerExportButton.AutoSize = false;
+        drawerExportButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        drawerExportButton.Density = MaterialButton.MaterialButtonDensity.Default;
+        drawerExportButton.Depth = 0;
+        drawerExportButton.Enabled = false;
+        drawerExportButton.HighEmphasis = true;
+        drawerExportButton.Icon = null;
+        drawerExportButton.Margin = new Padding(0, 0, 0, 8);
+        drawerExportButton.Name = "drawerExportButton";
+        drawerExportButton.NoAccentTextColor = Color.Empty;
+        drawerExportButton.Size = new Size(220, 36);
+        drawerExportButton.TabIndex = 3;
+        drawerExportButton.Text = "Export";
+        drawerExportButton.Type = MaterialButton.MaterialButtonType.Contained;
+        drawerExportButton.UseAccentColor = false;
+        drawerExportButton.UseVisualStyleBackColor = true;
+        mainToolTip.SetToolTip(drawerExportButton, "Export using presets");
+        //
+        // drawerTutorialButton
+        //
+        drawerTutorialButton.AutoSize = false;
+        drawerTutorialButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        drawerTutorialButton.Density = MaterialButton.MaterialButtonDensity.Default;
+        drawerTutorialButton.Depth = 0;
+        drawerTutorialButton.HighEmphasis = false;
+        drawerTutorialButton.Icon = null;
+        drawerTutorialButton.Margin = new Padding(0, 0, 0, 8);
+        drawerTutorialButton.Name = "drawerTutorialButton";
+        drawerTutorialButton.NoAccentTextColor = Color.Empty;
+        drawerTutorialButton.Size = new Size(220, 36);
+        drawerTutorialButton.TabIndex = 4;
+        drawerTutorialButton.Text = "Tutorial";
+        drawerTutorialButton.Type = MaterialButton.MaterialButtonType.Text;
+        drawerTutorialButton.UseAccentColor = false;
+        drawerTutorialButton.UseVisualStyleBackColor = true;
+        mainToolTip.SetToolTip(drawerTutorialButton, "Launch guided onboarding");
         // 
         // subtitleHeaderLabel
         // 
@@ -512,9 +642,12 @@ partial class MainForm
         // 
         playbackControlsLayout.AutoSize = true;
         playbackControlsLayout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        playbackControlsLayout.Controls.Add(frameBackButton);
         playbackControlsLayout.Controls.Add(playButton);
         playbackControlsLayout.Controls.Add(pauseButton);
         playbackControlsLayout.Controls.Add(stopButton);
+        playbackControlsLayout.Controls.Add(frameForwardButton);
+        playbackControlsLayout.Controls.Add(playbackPositionLabel);
         playbackControlsLayout.Dock = DockStyle.Fill;
         playbackControlsLayout.Location = new Point(4, 543);
         playbackControlsLayout.Margin = new Padding(4, 0, 4, 0);
@@ -523,8 +656,27 @@ partial class MainForm
         playbackControlsLayout.Size = new Size(982, 64);
         playbackControlsLayout.TabIndex = 3;
         // 
+        // frameBackButton
+        //
+        frameBackButton.AutoSize = false;
+        frameBackButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        frameBackButton.Density = MaterialButton.MaterialButtonDensity.Default;
+        frameBackButton.Depth = 0;
+        frameBackButton.Enabled = false;
+        frameBackButton.HighEmphasis = true;
+        frameBackButton.Icon = null;
+        frameBackButton.Margin = new Padding(0, 8, 12, 8);
+        frameBackButton.Name = "frameBackButton";
+        frameBackButton.NoAccentTextColor = Color.Empty;
+        frameBackButton.Size = new Size(120, 36);
+        frameBackButton.TabIndex = 0;
+        frameBackButton.Text = "Frame -1";
+        frameBackButton.Type = MaterialButton.MaterialButtonType.Contained;
+        frameBackButton.UseAccentColor = false;
+        frameBackButton.UseVisualStyleBackColor = true;
+        //
         // playButton
-        // 
+        //
         playButton.AutoSize = false;
         playButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
         playButton.Density = MaterialButton.MaterialButtonDensity.Default;
@@ -536,7 +688,7 @@ partial class MainForm
         playButton.Name = "playButton";
         playButton.NoAccentTextColor = Color.Empty;
         playButton.Size = new Size(120, 36);
-        playButton.TabIndex = 0;
+        playButton.TabIndex = 1;
         playButton.Text = "Play";
         playButton.Type = MaterialButton.MaterialButtonType.Contained;
         playButton.UseAccentColor = false;
@@ -555,7 +707,7 @@ partial class MainForm
         pauseButton.Name = "pauseButton";
         pauseButton.NoAccentTextColor = Color.Empty;
         pauseButton.Size = new Size(120, 36);
-        pauseButton.TabIndex = 1;
+        pauseButton.TabIndex = 2;
         pauseButton.Text = "Pause";
         pauseButton.Type = MaterialButton.MaterialButtonType.Contained;
         pauseButton.UseAccentColor = false;
@@ -574,11 +726,43 @@ partial class MainForm
         stopButton.Name = "stopButton";
         stopButton.NoAccentTextColor = Color.Empty;
         stopButton.Size = new Size(120, 36);
-        stopButton.TabIndex = 2;
+        stopButton.TabIndex = 3;
         stopButton.Text = "Stop";
         stopButton.Type = MaterialButton.MaterialButtonType.Contained;
         stopButton.UseAccentColor = false;
         stopButton.UseVisualStyleBackColor = true;
+        //
+        // frameForwardButton
+        //
+        frameForwardButton.AutoSize = false;
+        frameForwardButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        frameForwardButton.Density = MaterialButton.MaterialButtonDensity.Default;
+        frameForwardButton.Depth = 0;
+        frameForwardButton.Enabled = false;
+        frameForwardButton.HighEmphasis = true;
+        frameForwardButton.Icon = null;
+        frameForwardButton.Margin = new Padding(0, 8, 12, 8);
+        frameForwardButton.Name = "frameForwardButton";
+        frameForwardButton.NoAccentTextColor = Color.Empty;
+        frameForwardButton.Size = new Size(120, 36);
+        frameForwardButton.TabIndex = 4;
+        frameForwardButton.Text = "Frame +1";
+        frameForwardButton.Type = MaterialButton.MaterialButtonType.Contained;
+        frameForwardButton.UseAccentColor = false;
+        frameForwardButton.UseVisualStyleBackColor = true;
+        //
+        // playbackPositionLabel
+        //
+        playbackPositionLabel.AutoSize = true;
+        playbackPositionLabel.Depth = 0;
+        playbackPositionLabel.Font = new Font("Roboto", 14F, FontStyle.Regular, GraphicsUnit.Pixel);
+        playbackPositionLabel.Location = new Point(492, 8);
+        playbackPositionLabel.Margin = new Padding(0, 8, 0, 0);
+        playbackPositionLabel.MouseState = MaterialSkin.MouseState.HOVER;
+        playbackPositionLabel.Name = "playbackPositionLabel";
+        playbackPositionLabel.Size = new Size(170, 19);
+        playbackPositionLabel.TabIndex = 5;
+        playbackPositionLabel.Text = "00:00:00.000 / --:--:--.--";
         // 
         // subtitleTimingLabel
         // 
@@ -674,6 +858,12 @@ partial class MainForm
     private ToolStripMenuItem helpAboutMenuItem;
     private SplitContainer mainSplitContainer;
     private TableLayoutPanel leftPanelLayout;
+    private FlowLayoutPanel primaryActionsLayout;
+    private MaterialButton drawerNewButton;
+    private MaterialButton drawerOpenButton;
+    private MaterialButton drawerImportButton;
+    private MaterialButton drawerExportButton;
+    private MaterialButton drawerTutorialButton;
     private MaterialLabel subtitleHeaderLabel;
     private FlowLayoutPanel subtitleActionsLayout;
     private MaterialListView subtitleListView;
@@ -690,9 +880,13 @@ partial class MainForm
     private Label videoPlaceholderLabel;
     private TrackBar playbackTrackBar;
     private FlowLayoutPanel playbackControlsLayout;
+    private MaterialButton frameBackButton;
     private MaterialButton playButton;
     private MaterialButton pauseButton;
     private MaterialButton stopButton;
+    private MaterialButton frameForwardButton;
+    private MaterialLabel playbackPositionLabel;
     private MaterialLabel subtitleTimingLabel;
     private MaterialMultiLineTextBox2 subtitleTextBox;
+    private ToolTip mainToolTip;
 }
