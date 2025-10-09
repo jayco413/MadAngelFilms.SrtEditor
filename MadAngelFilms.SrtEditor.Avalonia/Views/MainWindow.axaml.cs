@@ -1,10 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Windowing;
@@ -15,6 +19,9 @@ namespace MadAngelFilms.SrtEditor.Avalonia.Views;
 
 public partial class MainWindow : AppWindow
 {
+    private static readonly object LibVlcInitializationLock = new();
+    private static bool _isLibVlcInitialized;
+
     private readonly LibVLC _libVlc;
     private readonly MediaPlayer _mediaPlayer;
     private readonly DispatcherTimer _playbackTimer;
@@ -24,7 +31,7 @@ public partial class MainWindow : AppWindow
     public MainWindow()
     {
         InitializeComponent();
-        LibVLCSharp.Shared.Core.Initialize();
+        InitializeLibVlc();
         _libVlc = new LibVLC();
         _mediaPlayer = new MediaPlayer(_libVlc);
         VideoView.MediaPlayer = _mediaPlayer;
@@ -35,7 +42,7 @@ public partial class MainWindow : AppWindow
         {
             Interval = TimeSpan.FromMilliseconds(250)
         };
-        _playbackTimer.Tick += (_, _) => UpdatePlaybackPosition();
+        _playbackTimer.Tick += OnPlaybackTimerTick;
     }
 
     private MainWindowViewModel ViewModel => (MainWindowViewModel)DataContext!;
@@ -59,20 +66,45 @@ public partial class MainWindow : AppWindow
 
     private async void OnOpenProjectClicked(object? sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFolderDialog
+        if (StorageProvider is null)
         {
+            await ShowMessageAsync("Folder picker unavailable", "This platform does not expose a folder picker.");
+            return;
+        }
+
+        var options = new FolderPickerOpenOptions
+        {
+            AllowMultiple = false,
             Title = "Select a project folder that contains an .srt and .mkv file."
         };
 
-        string? folder = await dialog.ShowAsync(this);
-        if (string.IsNullOrWhiteSpace(folder))
+        IReadOnlyList<IStorageFolder> folders;
+        try
         {
+            folders = await StorageProvider.OpenFolderPickerAsync(options);
+        }
+        catch (NotSupportedException)
+        {
+            await ShowMessageAsync("Folder picker unavailable", "This platform does not support selecting folders.");
+            return;
+        }
+
+        IStorageFolder? folder = folders.FirstOrDefault();
+        if (folder is null)
+        {
+            return;
+        }
+
+        string? folderPath = folder.TryGetLocalPath();
+        if (string.IsNullOrWhiteSpace(folderPath))
+        {
+            await ShowMessageAsync("Folder picker unavailable", "The selected folder does not provide a local file system path.");
             return;
         }
 
         try
         {
-            await ViewModel.LoadProjectAsync(folder);
+            await ViewModel.LoadProjectAsync(folderPath);
             LoadVideo(ViewModel.VideoFilePath);
         }
         catch (Exception ex)
@@ -242,6 +274,114 @@ public partial class MainWindow : AppWindow
         }
     }
 
+    private void OnPlaybackTimerTick(object? sender, EventArgs e)
+    {
+        UpdatePlaybackPosition();
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        _playbackTimer.Stop();
+        _playbackTimer.Tick -= OnPlaybackTimerTick;
+        if (_attachedViewModel is not null)
+        {
+            _attachedViewModel.PropertyChanged -= ViewModelOnPropertyChanged;
+            _attachedViewModel = null;
+        }
+        _mediaPlayer.EndReached -= MediaPlayerOnEndReached;
+        _mediaPlayer.TimeChanged -= MediaPlayerOnTimeChanged;
+        VideoView.MediaPlayer = null;
+        _mediaPlayer.Dispose();
+        _libVlc.Dispose();
+        base.OnClosed(e);
+    }
+
+    private static void InitializeLibVlc()
+    {
+        if (_isLibVlcInitialized)
+        {
+            return;
+        }
+
+        lock (LibVlcInitializationLock)
+        {
+            if (_isLibVlcInitialized)
+            {
+                return;
+            }
+
+            string? libVlcDirectory = TryGetLibVlcDirectory();
+            if (!string.IsNullOrEmpty(libVlcDirectory))
+            {
+                LibVLCSharp.Shared.Core.Initialize(libVlcDirectory);
+            }
+            else
+            {
+                LibVLCSharp.Shared.Core.Initialize();
+            }
+
+            _isLibVlcInitialized = true;
+        }
+    }
+
+    private static string? TryGetLibVlcDirectory()
+    {
+        string baseDirectory = AppContext.BaseDirectory;
+        string libraryName = GetLibVlcLibraryName();
+
+        foreach (string candidate in GetLibVlcCandidatePaths(baseDirectory))
+        {
+            if (File.Exists(Path.Combine(candidate, libraryName)))
+            {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<string> GetLibVlcCandidatePaths(string baseDirectory)
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            yield return Path.Combine(baseDirectory, "libvlc", "win-x64");
+            yield return Path.Combine(baseDirectory, "runtimes", "win-x64", "native");
+            yield return Path.Combine(baseDirectory, "libvlc", "win-x86");
+            yield return Path.Combine(baseDirectory, "runtimes", "win-x86", "native");
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            yield return Path.Combine(baseDirectory, "libvlc", "osx-x64");
+            yield return Path.Combine(baseDirectory, "runtimes", "osx-x64", "native");
+            yield return Path.Combine(baseDirectory, "libvlc", "osx-arm64");
+            yield return Path.Combine(baseDirectory, "runtimes", "osx-arm64", "native");
+        }
+        else
+        {
+            yield return Path.Combine(baseDirectory, "libvlc", "linux-x64");
+            yield return Path.Combine(baseDirectory, "runtimes", "linux-x64", "native");
+            yield return Path.Combine(baseDirectory, "libvlc", "linux-arm64");
+            yield return Path.Combine(baseDirectory, "runtimes", "linux-arm64", "native");
+        }
+
+        yield return baseDirectory;
+    }
+
+    private static string GetLibVlcLibraryName()
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return "libvlc.dll";
+        }
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            return "libvlc.dylib";
+        }
+
+        return "libvlc.so";
+    }
+
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
@@ -250,20 +390,5 @@ public partial class MainWindow : AppWindow
     private void OnExitClicked(object? sender, RoutedEventArgs e)
     {
         Close();
-    }
-
-    protected override void OnClosed(EventArgs e)
-    {
-        base.OnClosed(e);
-        _playbackTimer.Stop();
-        if (_attachedViewModel is not null)
-        {
-            _attachedViewModel.PropertyChanged -= ViewModelOnPropertyChanged;
-            _attachedViewModel = null;
-        }
-        _mediaPlayer.EndReached -= MediaPlayerOnEndReached;
-        _mediaPlayer.TimeChanged -= MediaPlayerOnTimeChanged;
-        _mediaPlayer.Dispose();
-        _libVlc.Dispose();
     }
 }

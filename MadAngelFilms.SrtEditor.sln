@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36310.24 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MadAngelFilms.SrtEditor.Avalonia", "MadAngelFilms.SrtEditor.Avalonia\MadAngelFilms.SrtEditor.Avalonia.csproj", "{48D74BA9-3B3F-4034-8BB2-53E620323E74}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MadAngelFilms.SrtEditor.Avalonia", "MadAngelFilms.SrtEditor.Avalonia\MadAngelFilms.SrtEditor.Avalonia.csproj", "{48D74BA9-3B3F-4034-8BB2-53E620323E74}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
 	ProjectSection(SolutionItems) = preProject
@@ -11,9 +11,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		sample_srt_file.srt = sample_srt_file.srt
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MadAngelFilms.SrtEditor.Core", "MadAngelFilms.SrtEditor.Core\MadAngelFilms.SrtEditor.Core.csproj", "{3FA049E5-C1DB-44FE-AC2F-F74629367B1D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MadAngelFilms.SrtEditor.Core", "MadAngelFilms.SrtEditor.Core\MadAngelFilms.SrtEditor.Core.csproj", "{3FA049E5-C1DB-44FE-AC2F-F74629367B1D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MadAngelFilms.SrtEditor.Controllers", "MadAngelFilms.SrtEditor.Controllers\MadAngelFilms.SrtEditor.Controllers.csproj", "{E4A7EC07-7D1E-48C3-87B1-1B740D8C6077}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MadAngelFilms.SrtEditor.Controllers", "MadAngelFilms.SrtEditor.Controllers\MadAngelFilms.SrtEditor.Controllers.csproj", "{E4A7EC07-7D1E-48C3-87B1-1B740D8C6077}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
