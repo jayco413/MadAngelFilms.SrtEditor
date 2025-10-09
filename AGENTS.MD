@@ -8,29 +8,24 @@
 ---
 
 ## 🎨 UI Design
-- Use Font Awesome SVG icons consistently  
-- Copy only icons used in the project; remove unused ones  
-- Use MaterialSkin.2 for all form styling
-- Apply Mad Angel Films color palette and typography (mad_angel_films_colors.txt)
-- Use consistent padding, spacing, and color hierarchy  
-- Define all icons and images in `/Resources/Icons/`  
+- Build desktop experiences with Avalonia 11 and FluentAvalonia UI components
+- Prefer `AppWindow` for primary shells and FluentAvalonia visual styles/themes
+- Keep the Mad Angel Films color palette and typography (mad_angel_films_colors.txt) as the accent baseline
+- Use responsive layouts with `Grid`, `StackPanel`, and `UniformGrid`; honor an 8px spacing rhythm
+- Store vector icons (Font Awesome SVGs) in `/Resources/Icons/` and reference them via `avares://`
+- Provide light and dark theme support through FluentAvalonia theme resources
+- Keep visual hierarchy clear: headers > subheaders > body text; align padding/margins consistently across views
 
 ---
 
 ## 🧱 UI Naming Conventions
-- Use PascalCase for classes, forms, and user controls  
-- Use camelCase for local variables and parameters  
-- Use _camelCase for private fields  
-- Use descriptive, meaningful names; avoid abbreviations  
-- Match form file names to class names exactly  
-- Use consistent naming for controls (`saveButton`, `customerTextBox`)  
-- Name event handlers as `ControlName_EventName`  
-- Avoid vague names like Button1 or TextBox2  
-- Organize controls using `Panel` or `GroupBox`  
-- Store all user controls in `/Controls/`  
-- Store all forms in `/Forms/`  
-- Keep designer and logic code separate  
-- Maintain clear and consistent folder hierarchy  
+- Use PascalCase for classes, XAML view files, and view-models (`MainWindow.axaml`, `MainWindowViewModel`)
+- Use camelCase for local variables and parameters; use `_camelCase` for private fields
+- Keep `x:Name` identifiers PascalCase (`SubtitleGrid`, `VideoView`)
+- Name event handlers with `On<Control><Event>` when commands are not viable
+- Prefer commanding and bindings over code-behind where possible; keep code-behind limited to view-specific orchestration
+- Organize Avalonia views under `/Views/` and accompanying view-models under `/ViewModels/`
+- Ensure file names match contained types exactly and maintain a consistent folder hierarchy
 
 ---
 
@@ -53,27 +48,25 @@
 ---
 
 ## ⚙️ Project Setup
-- UI projects contain only UI logic  
-- Models and business logic belong in separate DLL projects  
-- Create new DLLs when responsibilities do not fit existing ones  
-- Reduce coupling and enforce separation of concerns  
-- Follow Model–View–Controller (MVC) architecture principles  
+- UI projects host Avalonia views, view-models, and theming only
+- Keep domain models and services inside dedicated Core/Controller libraries
+- Introduce new class libraries when responsibilities do not fit existing ones
+- Reduce coupling and enforce separation of concerns between UI, controllers, and services
+- Follow a View ↔ ViewModel ↔ Controller flow; avoid embedding business logic directly in XAML code-behind
 
 ---
 
 ## 🧠 Architecture Guidelines
 
-### MVC Responsibilities
-- **Model** – data, DTOs, and external API logic only  
-- **View** – UI layout and control display logic only  
-- **Controller** – coordination, validation, and business flow  
-- No database or API logic inside Forms  
-- Views communicate only with Controllers or Services  
-- Controllers handle all non-UI logic  
-- Use dependency injection for controllers and services  
-- Keep Views “dumb” and Controllers “thin”  
-- Use DTOs/ViewModels for communication between layers  
-- Maintain one-way flow: View → Controller → Model → Controller → View  
+### MVVM + Controller Responsibilities
+- **Model** – data, DTOs, and external API logic only
+- **ViewModel** – state management, commands, and binding glue
+- **Controller/Service** – coordination, validation, and business flow
+- Keep Avalonia views free of business logic; limit code-behind to UI orchestration
+- Views interact with view-models via bindings and commands; view-models call controllers/services
+- Use dependency injection or explicit composition when constructing controllers and services
+- Keep view-models light and easily testable; reuse DTOs/ViewModels for communication between layers
+- Maintain one-way flow: View → ViewModel → Controller/Service → Model → Controller/Service → ViewModel → View
 
 ---
 
@@ -91,14 +84,13 @@
 ---
 
 ## ⏳ Progress and Feedback
-- All long-running operations must show progress feedback  
-- Use `ProgressBar`, overlay spinners, or status bar updates  
-- Update progress via `Invoke()` or `IProgress<T>`  
-- Disable inputs during operation and re-enable afterward  
-- Provide cancel buttons where appropriate  
-- Log progress start and completion  
-- Keep UI responsive; no blocking calls  
-- Reflect real progress, not simulated animation  
+- Surface progress for long-running operations (progress bar, overlay, or status text)
+- Update UI via `Dispatcher.UIThread.InvokeAsync` or `IProgress<T>`
+- Disable interactive elements while background work is executing and restore them afterward
+- Offer cancellation affordances where practical
+- Log the start and completion of long-running flows
+- Keep the UI thread responsive; never block on synchronous waits
+- Reflect actual progress whenever possible (avoid fake animations)
 
 ---
 
@@ -113,11 +105,11 @@
 ---
 
 ## 🧰 Dependency Injection
-- Prefer constructor injection for controllers and services  
-- Compose dependencies in `Program.cs` or initialization logic  
-- Avoid global statics or service locators  
-- Keep object creation out of Forms  
-- Register shared services during startup  
+- Prefer constructor injection for controllers and services
+- Compose dependencies in `Program.cs`, `App.axaml.cs`, or a dedicated bootstrapper
+- Avoid global statics or service locators
+- Keep object creation out of Avalonia views and code-behind
+- Register shared services during startup
 
 ---
 
@@ -131,122 +123,112 @@
 ---
 
 ## 🔄 Data Binding and Events
-- Prefer data binding over manual property setting  
-- Use `BindingSource` for grids and lists  
-- Unsubscribe from events in `Dispose()`  
-- Keep event handlers short and delegate to controllers  
-- Prevent memory leaks by cleaning up bindings  
+- Prefer Avalonia data binding over manual property setting
+- Back collections with `ObservableCollection<T>` and implement `INotifyPropertyChanged` on view-models
+- Unsubscribe from events in `OnClosed`/`OnUnloaded` to avoid leaks
+- Keep event handlers thin and delegate work to controllers or view-model commands
+- Use `DispatcherTimer`/`Dispatcher.UIThread` for UI updates from background threads
 
 ---
 
 ## 🖼️ Resources and Disposal
-- Store all images and icons in `.resx` or `/Resources/`  
-- Dispose `IDisposable` objects deterministically  
-- Use `using` blocks for `Bitmaps`, `Streams`, and `Graphics`  
-- Avoid hardcoded file paths or embedded assets  
-- Reuse resources across forms where possible  
+- Store reusable assets in `/Resources/` and reference them with `avares://` URIs
+- Dispose `IDisposable` objects deterministically (e.g., `LibVLC`, streams, timers)
+- Use `using` blocks for file/stream access and unmanaged handles
+- Avoid hardcoded file-system paths; rely on configuration or user selection
+- Reuse shared resources/styles across views where practical
 
 ---
 
 ## 🌍 Localization and Accessibility
-- Localize all strings via `.resx`  
-- Support multiple cultures via `CurrentUICulture`  
-- Assign `AccessibleName` and `AccessibleDescription`  
-- Use consistent and unique mnemonics (`&File`, `&Save`)  
-- Provide keyboard shortcuts for primary actions  
-- Ensure color contrast and legibility  
-- Enable full keyboard navigation (Tab, Alt, Arrow keys)  
+- Localize strings via `.resx` resources or Avalonia `ResourceDictionary`
+- Honor `CultureInfo.CurrentUICulture` when formatting dates/times
+- Provide `AutomationProperties.Name`/`HelpText` for interactive controls
+- Define unique access keys using `_` in headers (e.g., `_File`)
+- Provide keyboard shortcuts (`KeyGesture`) for primary actions
+- Ensure contrast ratios meet accessibility guidance
+- Preserve full keyboard navigation (Tab/Shift+Tab, arrow keys, access keys)
 
 ---
 
 ## 🗂️ Tabs, Tab Order & Keyboard Navigation
 
 ### Tab Order
-- Tab order flows left-to-right, top-to-bottom  
-- No duplicate or skipped `TabIndex` values  
-- Non-interactive controls must have `TabStop = false`  
-- Group inputs in panels or group boxes  
-- Containers precede their children in tab sequence  
-- Hidden or disabled controls are removed from tab flow  
-- Set `AcceptButton` and `CancelButton` for every form  
-- `Enter` triggers primary, `Esc` triggers secondary action  
-- Keep focus visible; never block tab navigation  
+- Tab order flows left-to-right, top-to-bottom
+- Provide sequential `TabIndex` values with no gaps for focusable elements
+- Mark non-interactive controls with `IsTabStop="False"`
+- Group related inputs with panels and headers for clarity
+- Keep containers earlier in the tab sequence than their children
+- Remove hidden/disabled controls from the tab flow
+- Expose primary/secondary actions via explicit buttons or key gestures
+- Keep focus visuals visible; never suppress focus cues
 
 ### TabControl Usage
-- Use a single `TabControl` named `mainTabControl`  
-- Limit to 5–7 tabs per form  
-- Each tab must include a mnemonic (`&General`, `&Advanced`)  
-- Tab order continues from header to tab content  
-- Lazy-load heavy tab content on first activation  
-- Disable rather than hide unavailable tabs  
-- Keep tab icons 16×16 and style-consistent  
-- Tab names should be nouns (e.g., Details, Settings)  
+- Use a single primary `TabControl` where tabs are required
+- Limit to 5–7 tabs per view to keep navigation manageable
+- Provide access keys in tab headers (`_General`, `_Advanced`)
+- Tab order flows from header to the active tab content
+- Lazy-load heavy tab content on first activation to keep startup light
+- Disable rather than hide unavailable tabs
+- Keep tab icons 16×16 and aligned with FluentAvalonia styling
+- Use noun-based tab labels (Details, Settings)
 
 ### Labels and Inputs
-- Every input requires an associated label with a mnemonic (`&Name:`)  
-- Label `TabIndex` precedes input field  
-- Label `UseMnemonic = true`, input `TabStop = true`  
-- `Alt+<key>` focuses associated control  
-- Provide accessibility descriptions for all input controls  
+- Pair every input with a descriptive label and access key (`_Name:`)
+- Ensure label `Target`/`Tag` associates with the input for accessibility
+- Inputs should remain focusable and expose helpful placeholders/tooltips
+- Provide accessibility descriptions for all interactive elements
 
 ---
 
 ## 🧭 Menus and Shortcuts
 
 ### General Menu Rules
-- Every main form includes a `MenuStrip` named `mainMenuStrip`  
-- Required top-level menus (in order):  
-  - **&File** – New, Open, Save, Exit  
-  - **&Edit** – Undo, Redo, Cut, Copy, Paste, Delete  
-  - **&View** – Toggle Panels, Themes, Refresh  
-  - **&Tools** – Options, Settings, Preferences  
-  - **&Help** – Documentation, Check for Updates, &About  
-- All menu items must have mnemonics (`&`)  
-- Mnemonics must be unique within scope  
-- Menu items must appear in consistent order across forms  
-- Use 16×16 SVG icons from `/Resources/Icons/`  
-- Align icons to the left of text  
-- Localize menu text and mnemonics via `.resx` files  
+- Provide a top-level `Menu` within each primary window
+- Recommended top-level menus (in order):
+  - **_File** – New, Open, Save, Exit
+  - **_Edit** – Undo, Redo, Cut, Copy, Paste, Delete
+  - **_View** – Toggle Panels, Themes, Refresh
+  - **_Tools** – Options, Settings, Preferences
+  - **_Help** – Documentation, Check for Updates, _About
+- Use unique access keys (underscored characters) per scope
+- Keep menu order consistent across windows
+- Reuse 16×16 SVG icons from `/Resources/Icons/` where appropriate
+- Localize menu headers and commands via resources
 
 ### Keyboard Shortcuts
-- Standard shortcut assignments:  
-  - Ctrl+N → New  
-  - Ctrl+O → Open  
-  - Ctrl+S → Save  
-  - Ctrl+Z / Ctrl+Y → Undo / Redo  
-  - Ctrl+X / Ctrl+C / Ctrl+V → Cut / Copy / Paste  
-  - Ctrl+Q → Exit  
-  - F1 → Help  
-- Do not override system-reserved shortcuts  
-- Shortcut display text must be consistent (`Ctrl+S`)  
+- Standard shortcut assignments:
+  - Ctrl+N → New
+  - Ctrl+O → Open
+  - Ctrl+S → Save
+  - Ctrl+Z / Ctrl+Y → Undo / Redo
+  - Ctrl+X / Ctrl+C / Ctrl+V → Cut / Copy / Paste
+  - Ctrl+Q → Exit
+  - F1 → Help
+- Use `KeyGesture` bindings for accelerators; display gestures consistently (`Ctrl+S`)
+- Avoid overriding system-reserved shortcuts
 
 ### Event Handling
-- Menu events must call controller actions, not inline logic  
-- Controller methods follow pattern: `Handle<MenuItem>Click()`  
-- Validate preconditions before executing menu actions  
-- Disable unavailable items instead of hiding them  
-- Global actions (Help, About) handled in shared controller  
+- Prefer commands bound to view-model actions; fall back to routed event handlers when necessary
+- Validate preconditions before executing actions
+- Disable unavailable menu items rather than hiding them
+- Handle shared/global actions through reusable controller/view-model methods
 
 ### Accessibility and UX
-- All menus support full keyboard navigation  
-- Assign `AccessibleName` and `ToolTipText`  
-- Maintain visible focus when navigating  
-- Match MaterialSkin theme colors and typography  
-- Menu text must meet contrast requirements  
-- Include hover highlight and focus feedback  
+- Ensure menus support keyboard navigation and visible focus states
+- Provide tooltips or help text where helpful
+- Honor FluentAvalonia color tokens for contrast and hover/pressed states
 
 ### Context Menus
-- Context menus named `<controlName>_contextMenu`  
-- Follow same icons and shortcuts as main menus  
-- Reuse same controller event handlers  
-- Do not include actions missing from main menu  
+- Name context menus `<ControlName>ContextMenu`
+- Reuse the same commands/handlers as the main menu where practical
+- Keep context menus aligned with available actions; avoid unique-only actions without menu equivalents
 
 ### Implementation Notes
-- Define menus in Designer, not dynamically  
-- Use shared `MenuHelper` for icons, mnemonics, and styles  
-- Avoid nesting beyond three levels  
-- Store shared templates in `/UI.Common/MenuTemplates/`  
-- Preserve mnemonic uniqueness across localizations  
+- Define menus in XAML when possible for clarity and localization
+- Limit hierarchy depth to three levels
+- Centralize shared menu styles in a reusable resource dictionary
+- Maintain mnemonic uniqueness across localizations
 
 ---
 

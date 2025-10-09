@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36310.24 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MadAngelFilms.SRTEditor.UI", "SRTEditor.UI\MadAngelFilms.SRTEditor.UI.csproj", "{AC1E101E-FB6B-402F-8C94-1BC8A779C6A9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MadAngelFilms.SrtEditor.Avalonia", "MadAngelFilms.SrtEditor.Avalonia\MadAngelFilms.SrtEditor.Avalonia.csproj", "{48D74BA9-3B3F-4034-8BB2-53E620323E74}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
 	ProjectSection(SolutionItems) = preProject
@@ -21,10 +21,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AC1E101E-FB6B-402F-8C94-1BC8A779C6A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AC1E101E-FB6B-402F-8C94-1BC8A779C6A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AC1E101E-FB6B-402F-8C94-1BC8A779C6A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AC1E101E-FB6B-402F-8C94-1BC8A779C6A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48D74BA9-3B3F-4034-8BB2-53E620323E74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48D74BA9-3B3F-4034-8BB2-53E620323E74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48D74BA9-3B3F-4034-8BB2-53E620323E74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48D74BA9-3B3F-4034-8BB2-53E620323E74}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3FA049E5-C1DB-44FE-AC2F-F74629367B1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3FA049E5-C1DB-44FE-AC2F-F74629367B1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FA049E5-C1DB-44FE-AC2F-F74629367B1D}.Release|Any CPU.ActiveCfg = Release|Any CPU

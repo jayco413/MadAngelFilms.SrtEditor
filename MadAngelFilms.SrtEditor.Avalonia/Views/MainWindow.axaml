@@ -1,0 +1,86 @@
+<fa:AppWindow xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:fa="clr-namespace:FluentAvalonia.UI.Windowing;assembly=FluentAvalonia"
+              xmlns:vlc="clr-namespace:LibVLCSharp.Avalonia;assembly=LibVLCSharp.Avalonia"
+              x:Class="MadAngelFilms.SrtEditor.Avalonia.Views.MainWindow"
+              Width="1200"
+              Height="800"
+              Title="Mad Angel Films Subtitle Editor">
+  <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="*">
+    <Menu Grid.Row="0">
+      <MenuItem Header="_File">
+        <MenuItem Header="_Open Folder..." Click="OnOpenProjectClicked"/>
+        <MenuItem Header="E_xit" Click="OnExitClicked"/>
+      </MenuItem>
+    </Menu>
+
+    <Grid Grid.Row="1" ColumnDefinitions="3* 4*" RowDefinitions="*">
+      <Border Grid.Column="0" BorderThickness="1" BorderBrush="{DynamicResource SystemAccentColor}" Margin="0,0,16,0">
+        <DataGrid ItemsSource="{Binding Subtitles}"
+                  SelectedItem="{Binding SelectedSubtitle, Mode=TwoWay}"
+                  IsReadOnly="True"
+                  AutoGenerateColumns="False"
+                  GridLinesVisibility="All"
+                  HeadersVisibility="All">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="#" Binding="{Binding SequenceNumber}" Width="60"/>
+            <DataGridTextColumn Header="Start" Binding="{Binding StartDisplay}" Width="140"/>
+            <DataGridTextColumn Header="End" Binding="{Binding EndDisplay}" Width="140"/>
+            <DataGridTextColumn Header="Text" Binding="{Binding Text}" Width="*"/>
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+
+      <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto,*">
+        <StackPanel Orientation="Vertical" Spacing="4" Margin="0,0,0,12">
+          <TextBlock Text="Video" FontSize="18" FontWeight="SemiBold"/>
+          <TextBlock Text="{Binding VideoFileName}"/>
+        </StackPanel>
+
+        <Border Grid.Row="1" Height="360" Background="#111D3A" CornerRadius="8" Margin="0,0,0,12">
+          <Grid>
+            <vlc:VideoView x:Name="VideoView" IsVisible="False"/>
+            <TextBlock x:Name="VideoPlaceholder"
+                       Text="Video playback preview will appear here."
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       TextWrapping="Wrap"
+                       FontStyle="Italic"
+                       Opacity="0.7"/>
+          </Grid>
+        </Border>
+
+        <StackPanel Grid.Row="2" Orientation="Vertical" Spacing="4" Margin="0,0,0,12">
+          <TextBlock Text="Subtitle" FontSize="18" FontWeight="SemiBold"/>
+          <TextBlock Text="{Binding SubtitleFileName}"/>
+          <TextBlock Text="Timing" FontSize="16" FontWeight="SemiBold" Margin="0,8,0,0"/>
+          <TextBlock Text="{Binding SelectedStartDisplay}"/>
+          <TextBlock Text="{Binding SelectedEndDisplay}"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="3" Orientation="Vertical" Spacing="8">
+          <TextBlock Text="Subtitle Text" FontSize="16" FontWeight="SemiBold"/>
+          <TextBox Text="{Binding SubtitleText, Mode=TwoWay}" AcceptsReturn="True" MinHeight="180"/>
+        </StackPanel>
+      </Grid>
+    </Grid>
+
+    <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto" Margin="0,12,0,0">
+      <Button Grid.Column="0" Content="Play" Click="OnPlayClicked" IsEnabled="{Binding HasVideo}" Margin="0,0,12,0"/>
+      <Button Grid.Column="1" Content="Pause" Click="OnPauseClicked" IsEnabled="{Binding HasVideo}" Margin="0,0,12,0"/>
+      <Button Grid.Column="2" Content="Stop" Click="OnStopClicked" IsEnabled="{Binding HasVideo}" Margin="0,0,12,0"/>
+      <Button Grid.Column="3" Content="⏮" Click="OnStepBackClicked" IsEnabled="{Binding HasVideo}" Margin="0,0,12,0"/>
+      <Button Grid.Column="4" Content="⏭" Click="OnStepForwardClicked" IsEnabled="{Binding HasVideo}" Margin="0,0,12,0"/>
+      <Slider Grid.Column="5"
+              Minimum="0"
+              Maximum="1"
+              Margin="0,0,12,0"
+              Value="{Binding PlaybackProgress, Mode=TwoWay}"
+              IsEnabled="{Binding HasVideo}"
+              PointerPressed="OnSeekStarted"
+              PointerReleased="OnSeekCompleted"
+              PointerMoved="OnSeekMoved"/>
+      <TextBlock Grid.Column="6" Text="{Binding PlaybackPositionText}" VerticalAlignment="Center"/>
+    </Grid>
+  </Grid>
+</fa:AppWindow>
