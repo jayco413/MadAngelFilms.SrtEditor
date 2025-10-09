@@ -3,11 +3,11 @@ using MadAngelFilms.SrtEditor.Core.Services;
 
 namespace MadAngelFilms.SrtEditor.Controllers;
 
-public sealed class MainFormController
+public sealed class MainWindowController
 {
     private readonly ISubtitleService _subtitleService;
 
-    public MainFormController(ISubtitleService subtitleService)
+    public MainWindowController(ISubtitleService subtitleService)
     {
         _subtitleService = subtitleService;
     }
