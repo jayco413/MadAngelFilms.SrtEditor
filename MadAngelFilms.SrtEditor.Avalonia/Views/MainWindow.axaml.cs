@@ -12,6 +12,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Windowing;
+using LibVLCSharp.Avalonia;
 using LibVLCSharp.Shared;
 using MadAngelFilms.SrtEditor.Avalonia.ViewModels;
 
@@ -27,14 +28,20 @@ public partial class MainWindow : AppWindow
     private readonly DispatcherTimer _playbackTimer;
     private bool _isSeeking;
     private MainWindowViewModel? _attachedViewModel;
+    private readonly VideoView _videoView;
+    private readonly TextBlock _videoPlaceholder;
 
     public MainWindow()
     {
         InitializeComponent();
+        _videoView = this.FindControl<VideoView>("VideoView")
+                      ?? throw new InvalidOperationException("VideoView control could not be located in the visual tree.");
+        _videoPlaceholder = this.FindControl<TextBlock>("VideoPlaceholder")
+                             ?? throw new InvalidOperationException("VideoPlaceholder control could not be located in the visual tree.");
         InitializeLibVlc();
         _libVlc = new LibVLC();
         _mediaPlayer = new MediaPlayer(_libVlc);
-        VideoView.MediaPlayer = _mediaPlayer;
+        _videoView.MediaPlayer = _mediaPlayer;
         _mediaPlayer.EndReached += MediaPlayerOnEndReached;
         _mediaPlayer.TimeChanged += MediaPlayerOnTimeChanged;
 
@@ -120,8 +127,8 @@ public partial class MainWindow : AppWindow
         _playbackTimer.Stop();
         ViewModel.ResetPlayback();
         bool hasVideo = !string.IsNullOrWhiteSpace(videoPath) && File.Exists(videoPath);
-        VideoPlaceholder.IsVisible = !hasVideo;
-        VideoView.IsVisible = hasVideo;
+        _videoPlaceholder.IsVisible = !hasVideo;
+        _videoView.IsVisible = hasVideo;
 
         if (!hasVideo)
         {
@@ -290,7 +297,7 @@ public partial class MainWindow : AppWindow
         }
         _mediaPlayer.EndReached -= MediaPlayerOnEndReached;
         _mediaPlayer.TimeChanged -= MediaPlayerOnTimeChanged;
-        VideoView.MediaPlayer = null;
+        _videoView.MediaPlayer = null;
         _mediaPlayer.Dispose();
         _libVlc.Dispose();
         base.OnClosed(e);
