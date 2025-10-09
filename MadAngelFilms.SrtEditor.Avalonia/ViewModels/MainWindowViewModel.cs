@@ -136,8 +136,8 @@ public sealed class MainWindowViewModel : ViewModelBase
 
         try
         {
-            SubtitleProject project = await _controller.LoadProjectAsync(directoryPath, cancellationToken).ConfigureAwait(false);
-            await UpdateFromProjectAsync(project).ConfigureAwait(false);
+            SubtitleProject project = await _controller.LoadProjectAsync(directoryPath, cancellationToken);
+            await UpdateFromProjectAsync(project);
             StatusMessage = $"Loaded {SubtitleFileName} with {Subtitles.Count} subtitles.";
         }
         catch (Exception ex)
